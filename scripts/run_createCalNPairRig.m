@@ -1,4 +1,4 @@
-calibDir = '/groups/branson/bransonlab/kwaki/ForceData/calibration/20231103_calibration';
+calibDir = '/groups/branson/home/bransonk/tracking/code/calibrate_jumping_arena/sampledata';
 numViews = 3;
 calibFilenamesCellArray = cell(numViews, numViews);
 

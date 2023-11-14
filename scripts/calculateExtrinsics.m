@@ -1,4 +1,4 @@
-baseDir = '/groups/branson/bransonlab/kwaki/ForceData/calibration/20231103_calibration';
+baseDir = '/groups/branson/home/bransonk/tracking/code/calibrate_jumping_arena/sampledata';
 opencvMats = cellfun(@(x) load(fullfile(baseDir, x)), {'cam_02_opencv.mat', 'cam_12_opencv.mat'}, 'uniformoutput', false);
 
 % have extrinsic parameters for camera 0->2 and 1->2. Need to create extrinsics for
