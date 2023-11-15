@@ -5,26 +5,23 @@ calibFile = '/groups/branson/bransonlab/kwaki/ForceData/outputs/20230920_updatec
 multicam = load(fullfile(baseDir, 'new/multi_calib.mat'));
 multicam = multicam.multicam;
 
-sampledPointsFilename = fullfile(baseDir, 'new/sampled.mat');
+sampledPointsFilename = fullfile(baseDir, 'sampled_12.mat');
 sampledPoints = load(sampledPointsFilename);
-optimizationCornersFrames = sampledPoints.optimizationCornersFrames;
+corners = sampledPoints.sampledCorners;
 
 %% assemble extrinsic data
 [projMats, fcs, ccs, kcs, alpha_cs] = constructCaltechCalibInfo(multicam);
 
 %% evaluate the checkerboard corners
 numCorners = 12;
-optimizationCornersReshaped = reshape(sampledPoints.optimizationCorners, 2, [], numCorners, 3);
-%optimizationCornersPermuted = permute(optimizationCornersReshaped, [1, 2, 4, 3]);
-optimizationCornersPermuted = permute(optimizationCornersReshaped, [1, 3, 4, 2]);
-
-numCheckerboards = size(optimizationCornersPermuted, 4);
+cornersPermuted = permute(corners, [5, 3, 1, 2, 4]);
+numCheckerboards = size(cornersPermuted, 4);
 
 % horizontal norms
 horizontalNorms = zeros(numCheckerboards * (numCorners - 3), 1);
 idx = 1;
 for i = 1:numCheckerboards
-    triangulated = multiDLT(optimizationCornersPermuted(:, :, :, i), projMats, fcs, ccs, kcs, alpha_cs);
+    triangulated = multiDLT(cornersPermuted(:, :, :, i), projMats, fcs, ccs, kcs, alpha_cs);
     for j = 1:11
         if mod(j, 4) ~= 0
             horizontalNorms(idx) = norm(triangulated(:, j) - triangulated(:, j+1));
@@ -37,7 +34,7 @@ end
 verticalNorms = zeros(numCheckerboards * (numCorners - 4), 1);
 idx = 1;
 for i = 1:numCheckerboards
-    triangulated = multiDLT(optimizationCornersPermuted(:, :, :, i), projMats, fcs, ccs, kcs, alpha_cs);
+    triangulated = multiDLT(cornersPermuted(:, :, :, i), projMats, fcs, ccs, kcs, alpha_cs);
     for j = 1:8
         verticalNorms(idx) = norm(triangulated(:, j) - triangulated(:, j+4));
         idx = idx + 1;
