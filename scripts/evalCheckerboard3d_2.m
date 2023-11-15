@@ -1,7 +1,6 @@
 %% script for evaluating checkerboard post calibration
 baseDir = '/groups/branson/bransonlab/kwaki/ForceData/outputs/improvingcalibration/20231114_avgc54day4';
 
-calibFile = '/groups/branson/bransonlab/kwaki/ForceData/outputs/20230920_updatecalibration/new/multi_calib.mat';
 multicam = load(fullfile(baseDir, 'new/multi_calib.mat'));
 multicam = multicam.multicam;
 
