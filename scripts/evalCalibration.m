@@ -1,25 +1,20 @@
 %% script for trying to update the stereo extrinsic estimates, using clicked points on the mouse
-% load data, setup paths
-baseDir = '/groups/branson/bransonlab/kwaki/ForceData/outputs/improvingcalibration/20231011_calibrateday3/new';
-
-cornerData02 = load(fullfile(baseDir, 'sampled_02.mat'));
-cornerData12 = load(fullfile(baseDir, 'sampled_12.mat'));
+baseDir = '/groups/branson/bransonlab/kwaki/ForceData/outputs/improvingcalibration/20231114_avgc54day4';
 
 % load calibration data
 multicam = load(fullfile(baseDir, 'new/multi_calib.mat'));
-%multicam = load('/groups/branson/bransonlab/DataforAPT/JumpingMice/calibrations/20230922.mat');
 multicam = multicam.multicam;
 
 
 % labeled point data
-tbl = load(fullfile(baseDir, 'day3labeledmoo_labels.mat'));
+tbl = load(fullfile(baseDir, 'avgc5455label_labels.mat'));
 tbl = tbl.tblLbls;
 
 frameNums = tbl.frm;
 frameCount = numel(frameNums);
 
 % load the clicked points, then reshape into a more useful structure
-points = reshape_table_points(tbl);
+points = reshapeTableLabels(tbl);
 [numFrames, numKeypoints, numViews] = size(points, [1, 2, 3]);
 occluded = reshape(tbl.tfocc, [numFrames, numKeypoints, numViews]);
 % first mask the occluded points. for this processing, dont need to ever look
@@ -28,7 +23,7 @@ points(cat(4, occluded, occluded)) = nan;
 % for now use nans as occluded...
 
 % construct instrinsic parameter structures, to help with some of the future processing.
-[projMats, fcs, ccs, kcs, alpha_cs] = constructCalibInfo(multicam);
+[projMats, fcs, ccs, kcs, alpha_cs] = constructCaltechCalibInfo(multicam);
 
 % construct starting extrinsic structure
 [omsOrg, TsOrg] = convertProjMat2RodT(projMats);
@@ -38,20 +33,11 @@ startingExtrinsics = convertRodT2OptimExtrinsicsVec(omsOrg, TsOrg);
 [optimizationKeypoints, testFiltered] = selectOptimizationKeypoints(points);
 % note, these keypoints will be of the shape, (2x(numKeypoints * numFrames) x numViews)
 
-% merge with corner data
-% need to convert the corner data from 2 view paired info, to 3 view. For the third view,
-% the corner data will be nans, and there isn't any filtering that the keypoints had.
-[optimizationCorners, optimizationCornersFrames] = buildOptimizationCorners2({cornerData02,cornerData12},10);
-
-% both the optimizationCorners and optimizationKeypoints should be in
-% 2 x number of points x numViews. So concatenate along the second dimension
-allPoints = cat(2, optimizationKeypoints, optimizationCorners);
-%allPoints = optimizationKeypoints;
+allPoints = optimizationKeypoints;
 
 % save the examples used for the optimization
 sampledPointsFilename = fullfile(baseDir, 'sampled.mat');
-save(sampledPointsFilename, 'optimizationKeypoints', 'optimizationCorners', 'optimizationCornersFrames');
-%save(sampledPointsFilename, 'optimizationKeypoints');
+save(sampledPointsFilename, 'optimizationKeypoints');
 
 
 %% construct the projection matrices and extrinsic data.
@@ -87,17 +73,6 @@ for i = 1:numViews
     end
 end
 
-fprintf("checkerboard, pairwise stereo reprojection errors\n");
-for i = 1:numViews
-    for j = (i+1):numViews
-        if i == 1 && j == 2
-            continue
-        end
-        [mean_rpe, rpe] = stereo_reprojection_error(optimizationCorners(:, :, [i, j]), oms_org{i,j}, Ts_org{i,j}, fcs([i,j]), ccs([i,j]), kcs([i,j]), alpha_cs([i,j]));
-        fprintf("cam %d, cam %d, %f\n", i, j, mean_rpe);
-        old_errors = old_errors + mean_rpe;
-    end
-end
 
 % create the projection matrix for the dlt
 proj_mats = cell(numViews, 1);
@@ -118,10 +93,12 @@ fprintf("total errors: %f\n", old_errors);
 %% create reprojection images.
 % plot reprojections
 movieNames = { ...
-    '/groups/branson/bransonlab/DataforAPT/JumpingMice/2023_08_VgatCtx_avgc50Plus_backToFibers/day4_avgc50_2023_08_18_12_32_32-002_0.avi', ...
-    '/groups/branson/bransonlab/DataforAPT/JumpingMice/2023_08_VgatCtx_avgc50Plus_backToFibers/day4_avgc50_2023_08_18_12_32_32-002_1.avi', ...
-    '/groups/branson/bransonlab/DataforAPT/JumpingMice/2023_08_VgatCtx_avgc50Plus_backToFibers/day4_avgc50_2023_08_18_12_32_32-002_2.avi' ...
+    '/groups/branson/bransonlab/DataforAPT/JumpingMice/2023_08_VgatCtx_avgc50Plus_backToFibers/day4_avgc54_2023_11_02_10_06_00-001_0.avi', ...
+    '/groups/branson/bransonlab/DataforAPT/JumpingMice/2023_08_VgatCtx_avgc50Plus_backToFibers/day4_avgc54_2023_11_02_10_06_00-001_1.avi', ...
+    '/groups/branson/bransonlab/DataforAPT/JumpingMice/2023_08_VgatCtx_avgc50Plus_backToFibers/day4_avgc54_2023_11_02_10_06_00-001_2.avi' ...
 };
+
+
 
 movieReaders = cell(3,1);
 for i = 1:length(movieNames)
@@ -150,37 +127,38 @@ for i = 1:numMasks
     X(:, :, i) = multiDLT(maskedKeypoints, proj_mats, fcs, ccs, kcs, alpha_cs);
 end
 triangulatedKeypoints = reshape(X, 3, numKeypoints, numFrames, numMasks);
-%X = multiDLT(optimizationKeypoints, proj_mats, fcs, ccs, kcs, alpha_cs);
-%triangulatedKeypoints = reshape(X, 3, numKeypoints, numFrames);
+% X = multiDLT(optimizationKeypoints, proj_mats, fcs, ccs, kcs, alpha_cs);
+% triangulatedKeypoints = reshape(X, 3, numKeypoints, numFrames);
 
-% reprojectionDir = fullfile(baseDir, 'reprojections');
-% if ~exist(reprojectionDir, 'dir')
-%     mkdir(reprojectionDir)
-% end
-% for i = 1:numFrames
-%     frames = cell(3,1);
-%     current_x = optimizationKeypointsPerFrame(:, :, i, :);
+reprojectionDir = fullfile(baseDir, 'reprojections');
+if ~exist(reprojectionDir, 'dir')
+    mkdir(reprojectionDir)
+end
+for i = 1:numFrames
+    frames = cell(3,1);
+    current_x = optimizationKeypointsPerFrame(:, :, i, :);
 
-%     currFrameNum = double(tbl.frm(i)  - 1);
-%     figure(100)
-%     clf
-%     for j=1:length(movieNames)
-%         movieReaders{j}.CurrentTime = currFrameNum / movieReaders{j}.FrameRate;
-%         frames{j} = readFrame(movieReaders{j});
-%         %x_reproj = project_points2(squeeze(triangulatedKeypoints(:, :, i)), rodrigues(proj_mats{j}(:, 1:3)), ...
-%         x_reproj = project_points2(squeeze(triangulatedKeypoints(:, :, i, 4)), rodrigues(proj_mats{j}(:, 1:3)), ...
-%             proj_mats{j}(:, 4), fcs{j}, ccs{j}, kcs{j}, alpha_cs{j});
+    currFrameNum = double(tbl.frm(i)  - 1);
+    figure(100)
+    clf
+    for j=1:length(movieNames)
+        movieReaders{j}.CurrentTime = currFrameNum / movieReaders{j}.FrameRate;
+        frames{j} = readFrame(movieReaders{j});
+        %x_reproj = project_points2(squeeze(triangulatedKeypoints(:, :, i)), rodrigues(proj_mats{j}(:, 1:3)), ...
+        x_reproj = project_points2(squeeze(triangulatedKeypoints(:, :, i, 4)), rodrigues(proj_mats{j}(:, 1:3)), ...
+            proj_mats{j}(:, 4), fcs{j}, ccs{j}, kcs{j}, alpha_cs{j});
 
-%         subplot(1,3,j);
-%         imshow(frames{j})
-%         hold on
+        subplot(1,3,j);
+        imshow(frames{j})
+        hold on
         
-%         plot(squeeze(current_x(1, :, :, j)), squeeze(current_x(2, :, :, j)), 'co', 'markersize', 5, 'linewidth', 2)
-%         plot(x_reproj(1,:), x_reproj(2,:), 'rx', 'markersize', 5, 'linewidth', 2)
+        plot(squeeze(current_x(1, :, :, j)), squeeze(current_x(2, :, :, j)), 'co', 'markersize', 5, 'linewidth', 2)
+        plot(x_reproj(1,:), x_reproj(2,:), 'rx', 'markersize', 5, 'linewidth', 2)
 
-%     end
-%     saveas(gcf, fullfile(reprojectionDir, num2str(currFrameNum) + ".png"));
-% end
+    end
+    sgtitle(sprintf("Frame Number: %d", currFrameNum + 1));
+    saveas(gcf, fullfile(reprojectionDir, num2str(currFrameNum) + ".png"));
+end
 
 colors = {'r', 'g', 'm'};
 epipolarDir = fullfile(baseDir, 'epipolar');
@@ -218,7 +196,7 @@ for i = 1:numFrames
             end
             plot(squeeze(current_x(1, i_kpt, j)), squeeze(current_x(2, i_kpt, j)), 'co', 'linewidth', 3, 'markersize', 5)
         end
-        sgtitle('red generated from view 1, green generated from view 2, magenta generated from view 3');
+        sgtitle(sprintf('red generated from view 1, green generated from view 2, magenta generated from view 3, frame: %d, kpt: %d', currFrameNum+1, i_kpt));
         saveas(gcf, fullfile(epipolarDir, num2str(i_kpt) + "_" + num2str(currFrameNum) + ".png"));
     end
 end
