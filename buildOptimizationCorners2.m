@@ -13,12 +13,12 @@ function [optimizationCorners, frameNums] = buildOptimizationCorners2(cornerData
         randIdx = randperm(length(cornerData{i}.frameNumbers), numSamples);
         temp = squeeze(cornerData{i}.sampledCorners);
         % hard code which thing to nan out.
-        if i == 1
-            temp(2, :, :, :) = nan;
-        end
-        if i == 2
-            temp(1, :, :, :) = nan;
-        end
+        % if i == 1
+        %     temp(2, :, :, :) = nan;
+        % end
+        % if i == 2
+        %     temp(1, :, :, :) = nan;
+        % end
         allCorners{i} = temp(:, randIdx, :, :);
         allFrames{i} = cornerData{i}.frameNumbers(randIdx);
     end
