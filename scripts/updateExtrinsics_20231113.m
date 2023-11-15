@@ -1,11 +1,11 @@
-baseDir = '/groups/branson/bransonlab/kwaki/ForceData/examples/20231113_stm3day3day4';
+baseDir = '/groups/branson/home/bransonk/tracking/code/calibrate_jumping_arena/sampledata';
 calibOutDir = fullfile(baseDir, "new");
 if ~exist(calibOutDir, 'dir')
     mkdir(calibOutDir);
 end
 
-calibFilename = fullfile(baseDir, "multicam.mat");
-mouseLabelTableName = fullfile(baseDir, "stm4day3_day4_labels.mat");
-sampledCheckerCornerFilenames = {};
+calibFilename = fullfile(baseDir, "multi_calib.mat");
+mouseLabelTableName = fullfile(baseDir, "SampleDataMouseForce_labels.mat");
+sampledCheckerCornerFilenames = {fullfile(baseDir,'sampled_02.mat')};
 
 updateExtrinsics(calibOutDir, calibFilename, mouseLabelTableName, sampledCheckerCornerFilenames)
