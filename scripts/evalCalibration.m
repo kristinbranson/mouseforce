@@ -36,8 +36,8 @@ startingExtrinsics = convertRodT2OptimExtrinsicsVec(omsOrg, TsOrg);
 allPoints = optimizationKeypoints;
 
 % save the examples used for the optimization
-sampledPointsFilename = fullfile(baseDir, 'sampled.mat');
-save(sampledPointsFilename, 'optimizationKeypoints');
+% sampledPointsFilename = fullfile(baseDir, 'sampled.mat');
+% save(sampledPointsFilename, 'optimizationKeypoints', );
 
 
 %% construct the projection matrices and extrinsic data.
