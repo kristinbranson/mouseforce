@@ -17,7 +17,7 @@ trialsMatNames = sort({trialsMatNames.name});
 trialsMatNames = reshape(trialsMatNames, totalMice, totalDays);
 
 % load the desired subset of data.
-mice = [2]; % mice start from 3 to 5... so some id translating is needed
+mice = [2];
 days = [1, 2, 3, 4];
 
 platDistsMats = cell(length(mice), length(days));
