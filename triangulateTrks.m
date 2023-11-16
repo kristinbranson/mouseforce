@@ -51,11 +51,11 @@ function [keypoints, allPoints, occludedMasked, heuristic, bestReprojError, trks
     %     end
     % end
 
-    %bestReprojError = [];
-    tic
-    [Xbest, reprojBestFlat] = bestRPETriangulate(keypointsFlattened, projMats, fc_s, cc_s, kc_s, alpha_cs);
-    reprojBest = reshape(reprojBestFlat, [2, numFrames, numKpts, numViews]);
-    toc
+    bestReprojError = [];
+    % tic
+    % [Xbest, reprojBestFlat] = bestRPETriangulate(keypointsFlattened, projMats, fc_s, cc_s, kc_s, alpha_cs);
+    % reprojBest = reshape(reprojBestFlat, [2, numFrames, numKpts, numViews]);
+    % toc
 
 end
 
