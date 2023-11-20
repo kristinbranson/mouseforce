@@ -5,7 +5,7 @@ if ~exist(calibOutDir, 'dir')
 end
 
 calibFilename = fullfile(baseDir, "multi_calib.mat");
-mouseLabelTableName = fullfile(baseDir, "SampleDataMouseForce_labels.mat");
+mouseLabelTableName = fullfile(baseDir, "avgc5455label_labels.mat");
 sampledCheckerCornerFilenames = {fullfile(baseDir,'sampled_02.mat')};
 
 updateExtrinsics(calibOutDir, calibFilename, mouseLabelTableName, sampledCheckerCornerFilenames)

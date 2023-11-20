@@ -1,5 +1,5 @@
 %% script for evaluating checkerboard post calibration
-baseDir = '/groups/branson/bransonlab/kwaki/ForceData/outputs/improvingcalibration/20231114_avgc54day4';
+baseDir = '/groups/branson/home/bransonk/tracking/code/calibrate_jumping_arena/sampledata';
 
 multicam = load(fullfile(baseDir, 'new/multi_calib.mat'));
 multicam = multicam.multicam;
@@ -45,6 +45,10 @@ end
 
 %% plot distributoin of corner distances
 figure(100);
+clf;
 histogram(horizontalNorms);
+xlabel('Horizontal distance (mm) -- should be 5');
 figure(101);
+clf;
 histogram(verticalNorms)
+xlabel('Vertical distance (mm) -- should be 5');

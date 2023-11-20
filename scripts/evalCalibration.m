@@ -1,5 +1,6 @@
 %% script for trying to update the stereo extrinsic estimates, using clicked points on the mouse
-baseDir = '/groups/branson/bransonlab/kwaki/ForceData/outputs/improvingcalibration/20231114_avgc54day4';
+% location containing calibrations
+baseDir = '/groups/branson/home/bransonk/tracking/code/calibrate_jumping_arena/sampledata';
 
 % load calibration data
 multicam = load(fullfile(baseDir, 'new/multi_calib.mat'));
